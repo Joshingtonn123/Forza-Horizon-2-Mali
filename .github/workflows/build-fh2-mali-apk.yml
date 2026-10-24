@@ -1,6 +1,9 @@
 name: Build FH2 Mali Recomp APK
 
 on:
+  push:
+    branches:
+      - FH2
   workflow_dispatch:
     inputs:
       confirm_own_dump:
@@ -18,7 +21,7 @@ concurrency:
 
 jobs:
   build-android:
-    if: github.ref == 'refs/heads/FH2' && inputs.confirm_own_dump
+    if: github.ref == 'refs/heads/FH2' && (github.event_name == 'push' || inputs.confirm_own_dump)
     runs-on: ubuntu-22.04
     timeout-minutes: 360
     env:
