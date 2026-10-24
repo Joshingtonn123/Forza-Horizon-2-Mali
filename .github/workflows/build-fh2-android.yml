@@ -1,0 +1,56 @@
+name: Build FH2 Android APK
+
+on:
+  push:
+    branches:
+      - FH2
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout FH2
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK, NDK and CMake
+        uses: android-actions/setup-android@v3
+
+      - name: Install required Android build tools
+        run: |
+          sdkmanager "ndk;28.2.13676358" "cmake;3.30.5"
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
+
+      - name: Check generated FH2 game code
+        run: |
+          if [ ! -f app/generated/default/sources.cmake ]; then
+            echo "::error::Missing app/generated/default/sources.cmake."
+            echo "The launcher can select the ISO after installation, but building the APK still requires generated C++ game code."
+            echo "That generated code is intentionally excluded from Git. It must first be generated from your own legally obtained FH2 game files using the project's Linux code-generation steps."
+            exit 1
+          fi
+
+      - name: Build APK using the project's script
+        run: |
+          chmod +x build_android.sh
+          ./build_android.sh
+
+      - name: Upload APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: FH2-Android-APK
+          path: android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
