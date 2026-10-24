@@ -12,11 +12,67 @@ permissions:
 jobs:
   build-apk:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 360
 
     steps:
       - name: Checkout FH2
         uses: actions/checkout@v4
+
+      - name: Free runner disk space
+        run: |
+          set -eu
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/share/boost /usr/share/swift /usr/local/share/powershell
+          df -h /
+
+      - name: Install Linux code-generation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-20 cmake ninja-build python3 git curl
+          clang-20 --version
+          cmake --version
+
+      - name: Fetch SDK third-party sources
+        run: python3 tools/fetch_thirdparty.py
+
+      - name: Download own FH2 disc image privately
+        env:
+          FH2_ISO_URL: ${{ secrets.FH2_ISO_URL }}
+        run: |
+          set -eu
+          if [ -z "${FH2_ISO_URL:-}" ]; then
+            echo "::error::Repository secret FH2_ISO_URL is not configured."
+            echo "Add FH2_ISO_URL in Settings > Secrets and variables > Actions. It must contain a private direct-download URL for your own legally obtained FH2 Xbox 360 ISO."
+            exit 1
+          fi
+          mkdir -p /tmp/fh2-input
+          curl --fail --location --retry 3 --retry-delay 5 --output /tmp/fh2-input/ForzaHorizon2.iso "$FH2_ISO_URL"
+          test -s /tmp/fh2-input/ForzaHorizon2.iso
+          ls -lh /tmp/fh2-input/ForzaHorizon2.iso
+
+      - name: Extract game files for code generation
+        run: |
+          set -eu
+          python3 tools/fase1_extraer.py /tmp/fh2-input/ForzaHorizon2.iso -o assets/game_root
+          test -s assets/game_root/default.xex
+          rm -f /tmp/fh2-input/ForzaHorizon2.iso
+          rmdir /tmp/fh2-input || true
+          df -h /
+
+      - name: Generate game C++ and build host tools
+        run: |
+          set -eu
+          cmake -S app -B app/out/linux -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=clang-20 \
+            -DCMAKE_CXX_COMPILER=clang++-20 \
+            -DREXSDK_DIR="$PWD/sdk"
+          cmake --build app/out/linux --parallel 2
+          test -s app/generated/default/sources.cmake
+
+      - name: Remove temporary game files and host build
+        run: |
+          set -eu
+          rm -rf assets/game_root app/out/linux
+          df -h /
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
@@ -35,21 +91,14 @@ jobs:
           echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
           echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
 
-      - name: Check generated FH2 game code
+      - name: Build Android APK
         run: |
-          if [ ! -f app/generated/default/sources.cmake ]; then
-            echo "::error::Missing app/generated/default/sources.cmake."
-            echo "The launcher can select the ISO after installation, but building the APK still requires generated C++ game code."
-            echo "That generated code is intentionally excluded from Git. It must first be generated from your own legally obtained FH2 game files using the project's Linux code-generation steps."
-            exit 1
-          fi
-
-      - name: Build APK using the project's script
-        run: |
+          set -eu
           chmod +x build_android.sh
           ./build_android.sh
+          test -s android/app/build/outputs/apk/release/app-release.apk
 
-      - name: Upload APK
+      - name: Upload APK only
         if: success()
         uses: actions/upload-artifact@v4
         with:
