@@ -92,7 +92,8 @@ jobs:
             -DCMAKE_C_COMPILER=clang-20 \
             -DCMAKE_CXX_COMPILER=clang++-20 \
             -DREXGLUE_ENABLE_TRACY=OFF \
-            -DREXGLUE_ENABLE_PERF_COUNTERS=OFF
+            -DREXGLUE_ENABLE_PERF_COUNTERS=OFF \
+            -DCMAKE_CXX_FLAGS="-mssse3"
           cmake --build sdk/out/linux-amd64 --target rexglue --parallel 2
           test -x sdk/out/linux-amd64/rexglue
 
