@@ -102,7 +102,8 @@ jobs:
           cmake -S app -B app/out/linux -G Ninja -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_COMPILER=clang-20 \
             -DCMAKE_CXX_COMPILER=clang++-20 \
-            -DREXSDK_DIR="$PWD/sdk"
+            -DREXSDK_DIR="$PWD/sdk" \
+            -DCMAKE_CXX_FLAGS="-mssse3"
           cmake --build app/out/linux --parallel 2
           test -s app/generated/default/sources.cmake
 
