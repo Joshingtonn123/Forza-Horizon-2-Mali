@@ -33,7 +33,7 @@ jobs:
       - name: Free runner disk space
         run: |
           set -eu
-          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/share/boost /usr/share/swift /usr/local/share/powershell
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost /usr/share/swift /usr/local/share/powershell
           echo "=== Disk space after cleanup ==="
           df -h /
 
