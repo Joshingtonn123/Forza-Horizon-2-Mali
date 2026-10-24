@@ -41,7 +41,7 @@ jobs:
         run: |
           set -eu
           sudo apt-get update
-          sudo apt-get install -y clang-20 cmake ninja-build python3 git curl
+          sudo apt-get install -y clang-20 cmake ninja-build python3 git curl pkg-config libvulkan-dev
           clang-20 --version
           clang++-20 --version
           cmake --version
@@ -85,9 +85,19 @@ jobs:
           echo "=== Disk space after preparing game input ==="
           df -h /
 
-      - name: Generate game C++ and build host tools
+      - name: Build ReXGlue host code generator and generate game C++
         run: |
           set -eu
+          cmake -S sdk -B sdk/out/linux-amd64 -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=clang-20 \
+            -DCMAKE_CXX_COMPILER=clang++-20 \
+            -DREXGLUE_ENABLE_TRACY=OFF \
+            -DREXGLUE_ENABLE_PERF_COUNTERS=OFF
+          cmake --build sdk/out/linux-amd64 --target rexglue --parallel 2
+          test -x sdk/out/linux-amd64/rexglue
+
+          REXGLUE="$PWD/sdk/out/linux-amd64/rexglue" tools/codegen.sh app
+
           cmake -S app -B app/out/linux -G Ninja -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_COMPILER=clang-20 \
             -DCMAKE_CXX_COMPILER=clang++-20 \
