@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build-apk:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 360
 
     steps:
@@ -34,28 +34,39 @@ jobs:
       - name: Fetch SDK third-party sources
         run: python3 tools/fetch_thirdparty.py
 
-      - name: Download own FH2 disc image privately
+      - name: Prepare default.xex for code generation
         env:
+          FH2_DEFAULT_XEX_URL: ${{ secrets.FH2_DEFAULT_XEX_URL }}
           FH2_ISO_URL: ${{ secrets.FH2_ISO_URL }}
         run: |
           set -eu
-          if [ -z "${FH2_ISO_URL:-}" ]; then
-            echo "::error::Repository secret FH2_ISO_URL is not configured."
-            echo "Add FH2_ISO_URL in Settings > Secrets and variables > Actions. It must contain a private direct-download URL for your own legally obtained FH2 Xbox 360 ISO."
+          mkdir -p assets/game_root /tmp/fh2-input
+
+          if [ -n "${FH2_DEFAULT_XEX_URL:-}" ]; then
+            echo "Downloading default.xex directly (smaller input)."
+            curl --fail --location --retry 3 --retry-delay 5 \
+              --output assets/game_root/default.xex "$FH2_DEFAULT_XEX_URL"
+          elif [ -n "${FH2_ISO_URL:-}" ]; then
+            echo "No FH2_DEFAULT_XEX_URL set; falling back to the full ISO."
+            curl --fail --location --retry 3 --retry-delay 5 \
+              --output /tmp/fh2-input/ForzaHorizon2.iso "$FH2_ISO_URL"
+            test -s /tmp/fh2-input/ForzaHorizon2.iso
+            python3 tools/fase1_extraer.py /tmp/fh2-input/ForzaHorizon2.iso -o assets/game_root
+            rm -f /tmp/fh2-input/ForzaHorizon2.iso
+          else
+            echo "::error::Configure FH2_DEFAULT_XEX_URL or FH2_ISO_URL in Settings > Secrets and variables > Actions."
+            echo "FH2_DEFAULT_XEX_URL should be a private direct-download URL for your own default.xex."
+            echo "FH2_ISO_URL can be used instead for your own legally obtained FH2 Xbox 360 ISO."
             exit 1
           fi
-          mkdir -p /tmp/fh2-input
-          curl --fail --location --retry 3 --retry-delay 5 --output /tmp/fh2-input/ForzaHorizon2.iso "$FH2_ISO_URL"
-          test -s /tmp/fh2-input/ForzaHorizon2.iso
-          ls -lh /tmp/fh2-input/ForzaHorizon2.iso
 
-      - name: Extract game files for code generation
-        run: |
-          set -eu
-          python3 tools/fase1_extraer.py /tmp/fh2-input/ForzaHorizon2.iso -o assets/game_root
           test -s assets/game_root/default.xex
-          rm -f /tmp/fh2-input/ForzaHorizon2.iso
-          rmdir /tmp/fh2-input || true
+          if [ "$(head -c 4 assets/game_root/default.xex)" != "XEX2" ]; then
+            echo "::error::The downloaded file is not a valid XEX2 default.xex. Check that the URL serves the file itself, not a web page."
+            exit 1
+          fi
+          rm -rf /tmp/fh2-input
+          ls -lh assets/game_root/default.xex
           df -h /
 
       - name: Generate game C++ and build host tools
