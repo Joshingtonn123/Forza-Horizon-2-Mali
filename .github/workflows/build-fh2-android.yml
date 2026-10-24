@@ -41,7 +41,7 @@ jobs:
         run: |
           set -eu
           sudo apt-get update
-          sudo apt-get install -y clang-20 cmake ninja-build python3 git curl pkg-config libvulkan-dev libx11-xcb-dev
+          sudo apt-get install -y clang-20 cmake ninja-build python3 git curl pkg-config libvulkan-dev libx11-xcb-dev libwayland-dev libxkbcommon-dev libegl1-mesa-dev wayland-protocols
           clang-20 --version
           clang++-20 --version
           cmake --version
