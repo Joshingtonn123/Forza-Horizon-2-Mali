@@ -1,6 +1,6 @@
 <div align="center">
 
-# FH2 Recompiled
+# FH2 Recompiled Mali
 
 **An unofficial static recompilation of Forza Horizon 2 (Xbox 360) for Android and Linux**
 
