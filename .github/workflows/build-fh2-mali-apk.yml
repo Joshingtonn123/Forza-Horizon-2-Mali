@@ -24,7 +24,6 @@ jobs:
     env:
       ANDROID_HOME: ${{ runner.temp }}/android-sdk
       ANDROID_SDK_ROOT: ${{ runner.temp }}/android-sdk
-      JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
     steps:
       - name: Check branch and required secret
         shell: bash
