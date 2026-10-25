@@ -36,7 +36,7 @@ android {
     }
 
     defaultConfig {
-        applicationId 'com.forzahorizon2.android'
+        applicationId 'com.FH2Reborn.Recomp'
         minSdk 26
         targetSdk 35
         versionCode 5
