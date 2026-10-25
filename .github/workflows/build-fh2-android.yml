@@ -144,6 +144,6 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: FH2-Android-APK
+          name: FH2-Reborn-APK
           path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
