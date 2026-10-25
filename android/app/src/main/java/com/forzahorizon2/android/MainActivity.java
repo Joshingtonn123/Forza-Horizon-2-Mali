@@ -1266,6 +1266,12 @@ public final class MainActivity extends AppCompatActivity {
                         tr(R.string.the_processor_and_the_gpu_driver)),
                 ui.header(tr(R.string.processor)),
                 ui.group(processorRows()),
+                ui.header(tr(R.string.mali_black_screen_compatibility)),
+                ui.group(ui.toggleRow(tr(R.string.mali_black_screen_compatibility_toggle),
+                        tr(R.string.mali_black_screen_compatibility_detail),
+                        GameOptions.flag(this, GameOptions.MALI_BLACK_SCREEN_COMPATIBILITY),
+                        enabled -> GameOptions.flag(this, GameOptions.MALI_BLACK_SCREEN_COMPATIBILITY, enabled))),
+                ui.footer(tr(R.string.mali_black_screen_compatibility_restart)),
                 ui.header(tr(R.string.gpu_driver)),
                 driverGroup(),
                 ui.footer(adreno
