@@ -62,6 +62,8 @@ final class GameOptions {
     // Performance
     static final String PIN_THREADS = "pin_threads";
     static final String JOGO_RAPIDO = "jogo_rapido";  // fh2_android_afinidade=jogo-rapido (off = auto)
+    // Experimental: force the present queue used by the Android Vulkan presenter to queue 0.
+    static final String MALI_BLACK_SCREEN_COMPATIBILITY = "mali_black_screen_compatibility";
     // fh2_android_adpf (Android's ADPF). Not "performance_hints": the 2026-10-14 A/B builds saved that key off on some
     // phones, and the toggle starts on for everyone.
     static final String PERFORMANCE_HINTS = "adpf_hints";
@@ -201,7 +203,7 @@ final class GameOptions {
     // hidden ones too, but the imported GPU driver.
     private static final String[] RESTORABLE = {RENDERER, RENDER_SCALE, FPS, ANTI_ALIASING, MSAA_SAMPLES, FXAA_QUALITY,
             SCALING, SHARPNESS, FSR_MODE, ANISOTROPIC, SHADOWS, SHADOW_DISTANCE, CAR_REFLECTIONS, SHADOW_MAP_SCALE,
-            WORLD_GRASS, WORLD_OBJECTS, WORLD_REFLECTIONS, WORLD_SHADOWS, WORLD_CROWD, FOLIAGE_COVERAGE, ONE_PASS, RESOLVE_SHORTCUT, ASYNC_SHADERS, LAZY_COMPOSITE, PIN_THREADS, JOGO_RAPIDO, PERFORMANCE_HINTS,
+            WORLD_GRASS, WORLD_OBJECTS, WORLD_REFLECTIONS, WORLD_SHADOWS, WORLD_CROWD, FOLIAGE_COVERAGE, ONE_PASS, RESOLVE_SHORTCUT, ASYNC_SHADERS, LAZY_COMPOSITE, PIN_THREADS, JOGO_RAPIDO, MALI_BLACK_SCREEN_COMPATIBILITY, PERFORMANCE_HINTS,
             VERTEX_CACHE, INDEX_CACHE, VERTEX_NO_WAIT, EXACT_TARGETS, REFLECTION_MIPS, TURBO};
 
     /** The Graphics and Performance options back to their defaults (defaultOf, flag): the stored values go. */
@@ -416,6 +418,15 @@ final class GameOptions {
 
     static List<String> arguments(Context context) {
         List<String> args = new ArrayList<>();
+        // Off is deliberately a no-op: keep the default presentation path bit-for-bit unchanged.
+        // When enabled, present on queue 0 from startup rather than waiting for a Mali driver to
+        // enter the swapchain reconnection loop. Keep the upstream recovery path and disable
+        // speculative image acquisition while this workaround is active.
+        if (flag(context, MALI_BLACK_SCREEN_COMPATIBILITY)) {
+            args.add("--present_segunda_cola=false");
+            args.add("--present_cola_unica_auto=true");
+            args.add("--present_adquisicion_anticipada=false");
+        }
         args.add("--audio_ganancia_pct=" + get(context, VOLUME));
         // Repeated messages (kernel stubs, resolved textures): the first 20 of each unless the player asks for all.
         args.add("--log_detalhado=" + flag(context, VERBOSE_LOG));
