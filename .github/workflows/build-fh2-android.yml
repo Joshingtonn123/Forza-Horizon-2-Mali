@@ -1,9 +1,7 @@
 name: Build FH2 Android APK
 
 on:
-  push:
-    branches:
-      - FH2
+  # Temporarily manual-only while the Android GLES fallback is being integrated.
   workflow_dispatch:
 
 permissions:
