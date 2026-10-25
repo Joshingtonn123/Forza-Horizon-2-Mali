@@ -351,4 +351,8 @@
     <string name="writes_to_the_log_how_long">Grava no log quanto tempo a GPU gasta em cada parte do quadro. Só para investigar: deixa o jogo mais lento, porque cada medição faz a GPU esperar.</string>
     <string name="reflection_mips_in_one_pass">Mips do reflexo num passe por nível</string>
     <string name="draws_the_reflection_mips_level_by_level">Desenha as versões menores dos reflexos todas juntas, em vez de uma por uma. A imagem não muda; alivia a GPU.</string>
+    <string name="mali_black_screen_compatibility">Compatibilidade com tela preta (experimental)</string>
+    <string name="mali_black_screen_compatibility_toggle">Compatibilidade de apresentação Mali</string>
+    <string name="mali_black_screen_compatibility_detail">Força a apresentação dos quadros na fila Vulkan principal em vez da fila secundária. Pode ajudar se o jogo continuar funcionando, mas a imagem ficar preta ou congelada.</string>
+    <string name="mali_black_screen_compatibility_restart">Reinicie o jogo após alterar esta opção. Desativada, nenhuma substituição é enviada e o comportamento normal é preservado.</string>
 </resources>
