@@ -792,6 +792,10 @@ public final class MainActivity extends AppCompatActivity {
                 rendererOptions,
                 ui.header("Black-screen troubleshooting"),
                 ui.group(
+                        ui.toggleRow("Mali compatibility: force Vulkan queue 0",
+                                "Enable the actual Mali presentation workaround: present on queue 0 from startup and disable speculative image acquisition. Fully close and relaunch the game after changing this. Native rendering still requires fh2_shaders.nfsp.",
+                                GameOptions.flag(this, GameOptions.MALI_BLACK_SCREEN_COMPATIBILITY),
+                                v -> GameOptions.flag(this, GameOptions.MALI_BLACK_SCREEN_COMPATIBILITY, v)),
                         ui.toggleRow("Native: deferred scene copy",
                                 "Experimental native-renderer path. Toggle it, relaunch the game, and compare whether the screen renders.",
                                 GameOptions.flag(this, GameOptions.LAZY_COMPOSITE),
