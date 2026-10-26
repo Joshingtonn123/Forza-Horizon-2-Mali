@@ -195,7 +195,7 @@ final class GameOptions {
         boolean byDefault = PIN_THREADS.equals(key) || PERFORMANCE_HINTS.equals(key) || ONE_PASS.equals(key) ||
                 ADAPTIVE_VBLANK.equals(key) || RESOLVE_SHORTCUT.equals(key) || VERTEX_CACHE.equals(key) ||
                 INDEX_CACHE.equals(key) || VERTEX_NO_WAIT.equals(key) || EXACT_TARGETS.equals(key) ||
-                VIBRATION_PHONE.equals(key);
+                VIBRATION_PHONE.equals(key) || MALI_BLACK_SCREEN_COMPATIBILITY.equals(key);
         return prefs(context).getBoolean(key, byDefault);
     }
 
