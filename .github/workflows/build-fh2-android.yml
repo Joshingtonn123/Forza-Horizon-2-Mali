@@ -72,9 +72,7 @@ jobs:
             if python3 -c 'import sys; sys.exit(0 if open(sys.argv[1], "rb").read(4).startswith(b"PK\\x03\\x04") else 1)' /tmp/fh2-input/game-download.bin; then
               echo "ZIP archive detected; extracting only default.xex, not the full game folder."
               python3 - <<'PY'
-          import os
           import shutil
-          import sys
           import zipfile
 
           archive = "/tmp/fh2-input/game-download.bin"
