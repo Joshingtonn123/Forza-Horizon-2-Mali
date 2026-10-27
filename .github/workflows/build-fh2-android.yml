@@ -76,19 +76,22 @@ jobs:
           import zipfile
 
           archive = "/tmp/fh2-input/game-download.bin"
-          output = "assets/game_root/default.xex"
+          required = ("default.xex", "XMediaFacade_default.xex", "SpeechFacade_default.xex")
           with zipfile.ZipFile(archive) as zf:
-              matches = [
-                  name for name in zf.namelist()
-                  if not name.endswith("/") and name.replace("\\", "/").rsplit("/", 1)[-1].lower() == "default.xex"
-              ]
-              if not matches:
-                  raise SystemExit("::error::ZIP archive does not contain a file named default.xex.")
-              if len(matches) > 1:
-                  print("Multiple default.xex files found; using the first archive match:", matches[0])
-              with zf.open(matches[0]) as source, open(output, "wb") as target:
-                  shutil.copyfileobj(source, target, length=1024 * 1024)
-          print("Extracted only:", matches[0], "->", output)
+              members = [name for name in zf.namelist() if not name.endswith("/")]
+              for wanted in required:
+                  matches = [
+                      name for name in members
+                      if name.replace("\\", "/").rsplit("/", 1)[-1].lower() == wanted.lower()
+                  ]
+                  if not matches:
+                      raise SystemExit("::error::ZIP archive is missing required file: " + wanted)
+                  if len(matches) > 1:
+                      print("Multiple matches for", wanted, "; using:", matches[0])
+                  output = "assets/game_root/" + wanted
+                  with zf.open(matches[0]) as source, open(output, "wb") as target:
+                      shutil.copyfileobj(source, target, length=1024 * 1024)
+                  print("Extracted:", matches[0], "->", output)
           PY
             else
               echo "ZIP signature not found; treating the download as an ISO image."
@@ -102,11 +105,13 @@ jobs:
             exit 1
           fi
 
-          test -s assets/game_root/default.xex
-          if [ "$(head -c 4 assets/game_root/default.xex)" != "XEX2" ]; then
-            echo "::error::The downloaded file is not a valid XEX2 default.xex. Check that the URL serves the file itself, not a web page."
-            exit 1
-          fi
+          for xex in default.xex XMediaFacade_default.xex SpeechFacade_default.xex; do
+            test -s "assets/game_root/$xex"
+            if [ "$(head -c 4 "assets/game_root/$xex")" != "XEX2" ]; then
+              echo "::error::assets/game_root/$xex is not a valid XEX2 file."
+              exit 1
+            fi
+          done
           rm -rf /tmp/fh2-input
           ls -lh assets/game_root/default.xex
           echo "=== Disk space after preparing game input ==="
