@@ -7,6 +7,12 @@ on:
       - FH2
   workflow_dispatch:
 
+# Keep only one FH2 build active. New FH2 commits cancel older runs instead of
+# letting several expensive builds/downloads run at the same time.
+concurrency:
+  group: fh2-android-build-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
